@@ -1,102 +1,79 @@
-This tutorial is made following below tutorial:
+This tutorial follows the guide available at the following link:  
 https://github.com/Xilinx/Vitis-AI-Copyleft-Model-Zoo.git
 
-
-To build the environment the Ubuntu 20.04 needed to be installed 
-
-Install NVIDIA CUDA (if want to use gpu)
-
-Install docker from below link:
+### Prerequisites
+- Install Ubuntu 20.04.
+- Install NVIDIA CUDA (if you want to use a GPU).
+- Install Docker from the link below:  
 https://docs.docker.com/desktop/install/ubuntu/
 
+### Steps
 
-Clone latest Vitis ai 
-```
-git clone https://github.com/Xilinx/Vitis-AI
-cd Vitis-AI
+1. **Clone the latest Vitis AI repository:**
+   ```bash
+   git clone https://github.com/Xilinx/Vitis-AI
+   cd Vitis-AI
+   ```
 
-```
+2. **Clone the Copyleft Model Zoo repository and copy the YOLOv7 folder to the Vitis-AI directory:**
+   ```bash
+   git clone https://github.com/Xilinx/Vitis-AI-Copyleft-Model-Zoo.git
+   cp -r Vitis-AI-Copyleft-Model-Zoo/yolov7 Vitis-AI/
+   ```
 
-Clone below link and copy the yolov folder to Vitis-AI direcotory
-```
-git clone https://github.com/Xilinx/Vitis-AI-Copyleft-Model-Zoo.git
+3. **Download the latest Vitis AI Docker container (CPU version):**
+   ```bash
+   docker pull xilinx/vitis-ai-cpu:latest
+   ```
 
-cp -r Vitis-AI-Copyleft-Model-Zoo/yolov7 Vitis-AI_directrory
-```
+4. **Run the Docker container:**
+   ```bash
+   ./docker_run.sh xilinx/vitis-ai-cpu:latest
+   ```
 
+5. **Activate the Vitis AI environment:**
+   ```bash
+   conda activate vitis-ai-pytorch
+   ```
 
-Download the latest Vitis AI Docker with the following command. This container runs on CPU.
+6. **Install YOLOv7 requirements:**
+   ```bash
+   !pip install -r yolov7/requirements.txt
+   ```
 
-```
-docker pull xilinx/vitis-ai-cpu:latest  
-```
+7. **Update `g++`:**
+   ```bash
+   !sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+   !sudo apt install -y g++-11
+   ```
 
-To run the docker, use command:
-```
-./docker_run.sh xilinx/vitis-ai-cpu:latest
-```
+8. **Get the COCO dataset:**
+   ```bash
+   %cd yolov7/
+   !bash scripts/get_coco.sh
+   %cd ../
+   ```
 
+   To use a custom dataset, annotate the dataset using LabelImg or other software. Then follow the tutorial linked below to prepare it for training:  
+   https://www.youtube.com/watch?v=GRtgLlwxpc4
 
+9. **Download the YOLOv7 training model from GitHub and place it in the `yolov7` folder:**
+   ```bash
+   cd yolov7 
+   wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7_training.pt
+   ```
 
-Activate environment 
+10. **Train with quantization-aware training (QAT):**  
+   Keep `--device 0` if running on GPU; otherwise, remove it.
+   ```bash
+   %cd yolov7/
+   !python train_qat.py --workers 16 --device 0 --epochs 100 --batch-size 8 --data data/coco.yaml --img 640 640 --cfg cfg/training/yolov7.yaml --weights yolov7_training.pt --name yolov7-qat --hyp data/hyp.scratch.p5_qat.yaml --nndct_convert_sigmoid_to_hsigmoid --nndct_convert_silu_to_hswish 
+   %cd ../
+   ```
 
-```
-conda activate vitis-ai-pytorch
-
-```
-
-Install yolov7 requrements
-
-```
-!pip install -r yolov7/requirements.txt
-
-```
-
-Update g++
-```
-!sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-!sudo apt install -y g++-11
-```
-
-Get coco dataset 
-```
-%cd yolov7/
-!bash scripts/get_coco.sh
-%cd ../
-```
-
-To use custom dataset, Dataset needs to be annotated using labelImg or other software then follow below tutorial to add to train.
-https://www.youtube.com/watch?v=GRtgLlwxpc4
-
-
-Download yolov7_trainign model from github and place in yolov7 folder
-```
-cd yolov7 
-wget https://github.com/WongKinYiu/yolov7/releases/download/v0.1/yolov7_training.pt
-```
-
-Train qant aware training 
-keep --device 0 if you are running on GPU else remove 
-
-```
-%cd yolov7/
-!python train_qat.py --workers 16 --device 0 --epochs 100 --batch-size 8 --data data/coco.yaml --img 640 640 --cfg cfg/training/yolov7.yaml --weights yolov7_training.pt --name yolov7-qat --hyp data/hyp.scratch.p5_qat.yaml --nndct_convert_sigmoid_to_hsigmoid --nndct_convert_silu_to_hswishv 
-%cd ../
-```
-
-Dump model: 
-
-```
-%cd yolov7/
-!python test_nndct.py --data data/coco.yaml --img 640 --batch 1 --conf 0.001 --iou 0.65 --device 0 --weights ../quantized/qat_09.pt --name yolov7_640_val --quant_mode test --nndct_qat --nndct_convert_sigmoid_to_hsigmoid --nndct_convert_silu_to_hswish --dump_model
-%cd ../
-
-```
-
-
-
-
-
-
-
-
+11. **Dump the model:**
+   ```bash
+   %cd yolov7/
+   !python test_nndct.py --data data/coco.yaml --img 640 --batch 1 --conf 0.001 --iou 0.65 --device 0 --weights ../quantized/qat_09.pt --name yolov7_640_val --quant_mode test --nndct_qat --nndct_convert_sigmoid_to_hsigmoid --nndct_convert_silu_to_hswish --dump_model
+   %cd ../
+   ```
