@@ -3,6 +3,7 @@ https://github.com/Xilinx/Vitis-AI-Copyleft-Model-Zoo.git
 
 
 To build the environment the Ubuntu 20.04 needed to be installed 
+
 Install NVIDIA CUDA (if want to use gpu)
 
 Install docker from below link:
@@ -66,7 +67,6 @@ Get coco dataset
 
 To use custom dataset, Dataset needs to be annotated using labelImg or other software then follow below tutorial to add to train.
 https://www.youtube.com/watch?v=GRtgLlwxpc4
-
 
 
 Download yolov7_trainign model from github and place in yolov7 folder
