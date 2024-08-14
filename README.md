@@ -64,6 +64,11 @@ Get coco dataset
 %cd ../
 ```
 
+To use custom dataset, Dataset needs to be annotated using labelImg or other software then follow below tutorial to add to train.
+https://www.youtube.com/watch?v=GRtgLlwxpc4
+
+
+
 Download yolov7_trainign model from github and place in yolov7 folder
 ```
 cd yolov7 
